@@ -3,30 +3,48 @@ import numpy as np
 from datetime import datetime
  
 
-def clean_df():
-    king_country_house_prices = pd.read_csv("./data/King_County_House_prices_dataset.csv")
-    king_country_house_prices_cleaning = king_country_house_prices.copy()
+def open_king_country_hous_prices_data():
+    open_house_prices = pd.read_csv("./data/King_County_House_prices_dataset.csv")
+    open_house_prices_data = open_house_prices.copy()
+    return open_house_prices_data
 
-    king_country_house_prices_cleaning = king_country_house_prices_cleaning[(\
-        king_country_house_prices_cleaning['bedrooms'] /\
-            king_country_house_prices_cleaning['bathrooms']) <= 10]
+def remove_outlier_with_high_bedroom_bathroom_ratio():
+    remove_outlier = open_king_country_hous_prices_data()[(\
+        open_king_country_hous_prices_data()['bedrooms'] /\
+            open_king_country_hous_prices_data()['bathrooms']) <= 10]
+    return remove_outlier
 
-    king_country_house_prices_cleaning['sqft_basement'] = king_country_house_prices_cleaning['sqft_basement'].replace('?', np.NaN)
-    king_country_house_prices_cleaning['sqft_basement'] = king_country_house_prices_cleaning['sqft_basement'].astype(float)
-    king_country_house_prices_cleaning.eval('sqft_basement = sqft_living - sqft_above', inplace=True)
-    king_country_house_prices_cleaning['view'].fillna(0, inplace=True)
-    king_country_house_prices_cleaning.waterfront.fillna(0, inplace=True)
+def inputation_sqft_basement():
+    sqft_basement = remove_outlier_with_high_bedroom_bathroom_ratio()
+    sqft_basement['sqft_basement'] = sqft_basement['sqft_basement'].replace('?', np.NaN)
+    sqft_basement['sqft_basement'] = sqft_basement['sqft_basement'].astype(float)
+    sqft_basement.eval('sqft_basement = sqft_living - sqft_above', inplace=True)
+    return sqft_basement
 
+def inputation_view_values():
+    view_values = inputation_sqft_basement()
+    view_values['view'].fillna(0, inplace=True)
+    return view_values
+
+def inputation_waterfront_values():
+    waterfront_values = inputation_view_values()
+    waterfront_values.waterfront.fillna(0, inplace=True)
+    return waterfront_values
+
+def last_change_on_building():
+    renovation = inputation_waterfront_values()
     last_known_change = []
-    for idx, yr_re in king_country_house_prices_cleaning.yr_renovated.items():
+    for idx, yr_re in renovation.yr_renovated.items():
         if str(yr_re) == 'nan' or yr_re == 0.0:
-            last_known_change.append(king_country_house_prices_cleaning.yr_built[idx])
+            last_known_change.append(renovation.yr_built[idx])
         else:
             last_known_change.append(int(yr_re))
-    king_country_house_prices_cleaning['last_known_change'] = last_known_change
-    king_country_house_prices_cleaning.drop("yr_renovated", axis=1, inplace=True)
-    king_country_house_prices_cleaning.drop("yr_built", axis=1, inplace=True)
+    renovation['last_known_change'] = last_known_change
+    renovation.drop("yr_renovated", axis=1, inplace=True)
+    renovation.drop("yr_built", axis=1, inplace=True)
+    return renovation
 
-    king_country_house_prices_cleaning['date'] = pd.to_datetime(king_country_house_prices_cleaning['date'])
-
-    return king_country_house_prices_cleaning
+def date_format():
+    date_format = last_change_on_building()
+    date_format['date'] = pd.to_datetime(date_format['date'])
+    return date_format
