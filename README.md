@@ -16,3 +16,12 @@ python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 ```
+## Answer following questions in the README.md file
+
+- What are the steps you took to complete the project?
+  * Creating of two python files. One for cleaning and one enginiering for the data science project.
+  * Created the pipelines where both parts are combiened.
+- What are the challenges you faced?
+  * You need to get used to it and it needs some practice. It was worth it to give it a try.
+- What are the things you would do differently if you had more time?
+  * Start in Jupiter Notebooks and than as soon es everything works create a python file.
